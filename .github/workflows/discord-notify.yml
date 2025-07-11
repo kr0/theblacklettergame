@@ -1,0 +1,18 @@
+name: Notify Discord on Push
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  discord_notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: https://discord.com/api/webhooks/1393318986413768724/zVCtGftHMGC_ChcWtU4ahNjhfgPUiQCsz-lnf-gFgidI0oDz9kTNLhdJRCoGX3bnl7ax
+        run: |
+          MESSAGE="New push to master branch in theblacklettergame!"
+          PAYLOAD="{\"content\": \"$MESSAGE\"}"
+          curl -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK"

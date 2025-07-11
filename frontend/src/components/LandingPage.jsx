@@ -1,5 +1,7 @@
 
 import React from "react";
+import { Link } from "react-router-dom";
+import { DISCORD_URL, TWITTER_URL } from "../constants";
 
 function LandingPage() {
   return (
@@ -23,13 +25,13 @@ function LandingPage() {
       <section style={{ textAlign: 'center', marginTop: '3rem' }}>
         <h2 style={{ color: '#222', marginBottom: '1rem' }}>Get Started</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', alignItems: 'center', maxWidth: '400px', margin: '0 auto' }}>
-          <a href="/rules" style={{
+          <Link to="/rules" style={{
             background: '#222', color: '#fff', padding: '0.8em 2em', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', boxShadow: '0 1px 4px #ddd', transition: 'background 0.2s',
-          }}>Read the Rules</a>
-          <a href="https://discord.gg/yourcommunity" target="_blank" rel="noopener noreferrer" style={{
+          }}>Read the Rules</Link>
+          <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer" style={{
             background: '#0077ff', color: '#fff', padding: '0.8em 2em', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', boxShadow: '0 1px 4px #ddd', transition: 'background 0.2s',
           }}>Join Our Community</a>
-          <a href="https://twitter.com/blacklettergame" target="_blank" rel="noopener noreferrer" style={{
+          <a href={TWITTER_URL} target="_blank" rel="noopener noreferrer" style={{
             background: '#1da1f2', color: '#fff', padding: '0.8em 2em', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', boxShadow: '0 1px 4px #ddd', transition: 'background 0.2s',
           }}>Follow Our Progress</a>
         </div>

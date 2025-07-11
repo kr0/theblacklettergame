@@ -40,6 +40,7 @@ build/
 *.egg-info/
 
 # Vite/React
+.vite/
 node_modules/
 dist/
 .env.local
