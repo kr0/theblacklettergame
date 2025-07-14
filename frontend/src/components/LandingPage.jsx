@@ -5,12 +5,17 @@ import { DISCORD_URL, TWITTER_URL } from "../constants";
 
 function LandingPage() {
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '2rem', background: '#f8f9fa' }}>
+    <div style={{ fontFamily: 'serif', padding: '2rem', background: '#f8f9fa' }}>
       {/* Hero Section */}
       <section style={{ textAlign: 'center', marginBottom: '3rem' }}>
-        <h1 style={{ fontSize: '3rem', margin: '0.5em 0', color: '#222' }}>Welcome to Blackletter</h1>
-        <p style={{ fontSize: '1.5rem', color: '#555', maxWidth: '600px', margin: '0 auto' }}>
-          A fast-paced, strategic word game inspired by medieval rules and modern fun.
+        <h1 style={{ fontSize: '3rem', margin: '0.5em 0', color: '#222', fontFamily: 'Blackletter, serif', letterSpacing: '2px' }}>
+          Blackletter
+        </h1>
+        <p style={{ fontSize: '1.3rem', color: '#333', fontWeight: 'bold', margin: '0.5em 0' }}>
+          Fast. Tactical. Miniature-agnostic.
+        </p>
+        <p style={{ fontSize: '1.1rem', color: '#555', maxWidth: '500px', margin: '0 auto' }}>
+          A wargame for any minis, any table, any time.
         </p>
       </section>
 
@@ -18,9 +23,10 @@ function LandingPage() {
       <section style={{ background: '#fff', borderRadius: '8px', boxShadow: '0 2px 8px #eee', padding: '2rem', maxWidth: '700px', margin: '0 auto' }}>
         <h2 style={{ color: '#222', marginBottom: '1rem' }}>About the Game</h2>
         <p style={{ color: '#444', lineHeight: '1.7' }}>
-          Blackletter is a unique blend of classic word games and medieval intrigue. Challenge your friends or play solo, mastering the rules and strategies to outwit your opponents. Each round brings new twists, with special rules inspired by historical manuscripts. Are you ready to become a Blackletter champion?
+          Blackletter is a framework for entertaining, tactically rich battles. The rules are streamlined for quick learning and fast play, but offer enough depth for creative strategies and memorable moments. Whether you’re a veteran wargamer or new to the hobby, Blackletter is designed to be accessible, flexible, and fun.
         </p>
       </section>
+
       {/* Call to Action Section */}
       <section style={{ textAlign: 'center', marginTop: '3rem' }}>
         <h2 style={{ color: '#222', marginBottom: '1rem' }}>Get Started</h2>

@@ -28,3 +28,12 @@ If you choose to **command your forces**, you may command two actions. These act
 - **Skirmish**: If an enemy unit is within range of the unit being commanded, it may **skirmish** with that enemy unit. See [Skirmishing](#skirmishing), below.
 
 > Note: Some units have special actions that only they may perform.
+
+---
+
+## Overextended
+
+If a single unit is commanded to perform the *same* action twice in a single turn (such as move-move, or skirmish-skirmish), it is considered **overextended** for that second action.
+
+- An overextended unit that moves only uses half its speed value, and triggers **pot shots** from any enemies it is in range of (see [Pot Shots](#pot-shots), below).
+- An overextended unit that skirmishes has -1 to all hit rolls and **cover save** rolls (see [Attack Procedure](#attack-procedure), below).
