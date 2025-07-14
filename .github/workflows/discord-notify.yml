@@ -10,9 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Discord Notification
-        env:
           DISCORD_WEBHOOK: https://discord.com/api/webhooks/1393318986413768724/zVCtGftHMGC_ChcWtU4ahNjhfgPUiQCsz-lnf-gFgidI0oDz9kTNLhdJRCoGX3bnl7ax
         run: |
-          MESSAGE="New push to master branch in theblacklettergame!"
+          COMMIT_URL="https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+          WEBSITE_URL="https://blackletter-dev.web.app"
+          MESSAGE="New push to master branch in theblacklettergame!\nCommit: $COMMIT_URL\nWebsite: $WEBSITE_URL"
           PAYLOAD="{\"content\": \"$MESSAGE\"}"
           curl -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK"

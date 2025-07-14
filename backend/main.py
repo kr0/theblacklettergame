@@ -20,7 +20,7 @@ def read_root():
     return {"message": "Hello, World!"}
 
 
-RULES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "rules"))
+RULES_DIR = os.path.join(os.path.dirname(__file__), "rules")
 
 @app.get("/rules")
 def list_rules():
