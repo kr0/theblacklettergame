@@ -2,7 +2,7 @@
 
 .PHONY: backend
 backend:
-	cd backend && uvicorn main:app --reload
+	cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 .PHONY: frontend
 frontend:
@@ -11,7 +11,7 @@ frontend:
 .PHONY: build
 build:
 	bash scripts/build_backend_image.sh
-	cd frontend && npm run build
+	cd frontend && rm -rf dist && npm run build
 
 .PHONY: deploy
 deploy:
@@ -23,7 +23,7 @@ build-backend:
 
 .PHONY: build-frontend
 build-frontend:
-	cd frontend && npm run build
+	cd frontend && rm -rf dist && npm run build
 
 .PHONY: deploy-backend
 deploy-backend:

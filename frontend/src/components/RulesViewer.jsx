@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import { BACKEND_URL } from "../constants";
 
 /**
  * RulesViewer displays a list of rules and their content.
@@ -13,15 +14,16 @@ const RulesViewer = () => {
   const [ruleContent, setRuleContent] = useState("");
   const [showRaw, setShowRaw] = useState(false);
 
+
   useEffect(() => {
-    fetch("http://localhost:8000/rules")
+    fetch(`${BACKEND_URL}/rules`)
       .then((res) => res.json())
       .then((data) => setRules(data.rules));
   }, []);
 
   const handleRuleClick = (rule) => {
     setSelectedRule(rule);
-    fetch(`http://localhost:8000/rules/${rule}`)
+    fetch(`${BACKEND_URL}/rules/${rule}`)
       .then((res) => res.text())
       .then((text) => setRuleContent(text));
   };

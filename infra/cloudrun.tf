@@ -18,11 +18,13 @@ resource "google_cloud_run_service" "backend" {
       containers {
         image = var.cloudrun_image
         ports {
-          container_port = 80
+          container_port = 8080 # Cloud Run expects 8080
         }
       }
     }
   }
+  # Allow unauthenticated invocations
+  depends_on = [google_cloud_run_service_iam_member.noauth]
 
   traffic {
     percent         = 100
@@ -30,4 +32,11 @@ resource "google_cloud_run_service" "backend" {
   }
 
   autogenerate_revision_name = true
+}
+
+resource "google_cloud_run_service_iam_member" "noauth" {
+  service  = google_cloud_run_service.backend.name
+  location = google_cloud_run_service.backend.location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
