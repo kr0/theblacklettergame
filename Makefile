@@ -20,7 +20,7 @@ build:
 
 .PHONY: deploy
 deploy:
-	bash scripts/deploy_to_cloud_run.sh & bash scripts/deploy_frontend.sh
+	bash scripts/deploy_to_cloud_run.sh & bash scripts/deploy_frontend.sh & wait
 
 .PHONY: build-backend
 build-backend:
