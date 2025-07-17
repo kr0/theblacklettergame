@@ -2,7 +2,11 @@
 
 .PHONY: backend
 backend:
-	cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000
+	cd backend \
+	&& python3 -m venv ../.venv \
+	&& ../.venv/bin/pip install --upgrade pip \
+	&& ../.venv/bin/pip install -r requirements.txt \
+	&& ../.venv/bin/python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 .PHONY: frontend
 frontend:
@@ -10,8 +14,9 @@ frontend:
 
 .PHONY: build
 build:
-	bash scripts/build_backend_image.sh
-	cd frontend && rm -rf dist && npm run build
+	bash scripts/build_backend_image.sh &
+	cd frontend && rm -rf dist && npm run build &
+	wait
 
 .PHONY: deploy
 deploy:

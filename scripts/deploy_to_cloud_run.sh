@@ -8,11 +8,13 @@ IMAGE_NAME=gcr.io/$PROJECT_ID/$SERVICE_NAME
 # Configure Docker to use Google Cloud credentials
 gcloud auth configure-docker gcr.io
 
-# Deploy to Cloud Run
+
+# Fetch GAMEMASTER_PASSPHRASE from Secret Manager and set as env var in Cloud Run
 gcloud run deploy $SERVICE_NAME \
   --image $IMAGE_NAME \
   --region $REGION \
   --platform managed \
-  --allow-unauthenticated
+  --allow-unauthenticated \
+  --update-secrets=GAMEMASTER_PASSPHRASE=GAMEMASTER_PASSPHRASE:latest
 
 echo "Backend deployed to Cloud Run as $SERVICE_NAME in $REGION."

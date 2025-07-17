@@ -1,3 +1,7 @@
+output "gamemaster_passphrase_secret_id" {
+  description = "Secret Manager secret id for GAMEMASTER_PASSPHRASE used by backend."
+  value       = google_secret_manager_secret.gamemaster_passphrase.secret_id
+}
 // outputs.tf - Terraform outputs
 // ...placeholder for output definitions...
 output "cloudrun_url" {

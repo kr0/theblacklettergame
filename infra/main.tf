@@ -1,3 +1,10 @@
+# Create Firestore database in Native mode
+resource "google_firestore_database" "database" {
+  project     = var.project_name
+  name        = "(default)"
+  location_id = "nam5"
+  type        = "FIRESTORE_NATIVE"
+}
 # Terraform configuration to set up providers by version.
 terraform {
   required_providers {
@@ -47,6 +54,8 @@ resource "google_project_service" "default" {
     "serviceusage.googleapis.com",
     "run.googleapis.com",
     "cloudbuild.googleapis.com",
+    "firestore.googleapis.com",
+    "secretmanager.googleapis.com",
   ])
   service            = each.key
   disable_on_destroy = false

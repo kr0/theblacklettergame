@@ -22,8 +22,14 @@ variable "cloudrun_image" {
   default     = "gcr.io/blackletter-dev/blackletter-backend"
 }
 
+
 variable "billing_account" {
   description = "GCP Billing Account ID (format: 000000-000000-000000)"
   type        = string
   default     = "01EF34-1F1526-D8304E"
+}
+
+variable "gamemaster_passphrase" {
+  description = "Passphrase for gamemaster auth. Used for Google Secret Manager."
+  type        = string
 }
