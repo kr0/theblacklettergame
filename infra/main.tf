@@ -114,6 +114,45 @@ resource "google_firestore_database" "default" {
   type        = "FIRESTORE_NATIVE"
 }
 
+
+resource "google_firebaserules_ruleset" "firestore" {
+  project = var.project_id
+  source {
+    files {
+      content = <<RULES
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /rules/{ruleId} {
+      allow read: if true;
+      allow write: if request.auth != null &&
+        request.auth.token.email in get(/databases/$(database)/documents/_firestore_admins/config).data.adminEmails;
+    }
+  }
+}
+RULES
+      name = "firestore.rules"
+    }
+  }
+}
+
+resource "google_firestore_document" "admin_config" {
+  project     = var.project_id
+  collection  = "_firestore_admins"
+  document_id = "config"
+  fields = jsonencode({
+    adminEmails = {
+      arrayValue = {
+        values = [
+          for email in var.firestore_admin_emails : { stringValue = email }
+        ]
+      }
+    }
+  })
+  depends_on = [google_firestore_database.default]
+}
+
+
 # ------------------------------------------------------------------------------
 # Secret Manager
 # ------------------------------------------------------------------------------

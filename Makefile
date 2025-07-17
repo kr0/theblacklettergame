@@ -15,12 +15,12 @@ frontend:
 .PHONY: build
 build:
 	bash scripts/build_backend_image.sh &
-	cd frontend && rm -rf dist && npm run build &
+	bash scripts/build_frontend.sh &
 	wait
 
 .PHONY: deploy
 deploy:
-	bash scripts/deploy_to_cloud_run.sh && bash scripts/deploy_frontend.sh
+	bash scripts/deploy_to_cloud_run.sh & bash scripts/deploy_frontend.sh
 
 .PHONY: build-backend
 build-backend:
@@ -28,7 +28,7 @@ build-backend:
 
 .PHONY: build-frontend
 build-frontend:
-	cd frontend && rm -rf dist && npm run build
+	bash scripts/build_frontend.sh
 
 .PHONY: deploy-backend
 deploy-backend:

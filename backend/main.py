@@ -14,8 +14,6 @@ from typing import List, Optional
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
-# List of allowed Google emails for admin actions
-ALLOWED_ADMIN_EMAILS = set(os.environ.get("BLACKLETTER_ADMIN_EMAILS", "").split(","))
 
 # Initialize Firebase Admin SDK (for verifying ID tokens)
 if not firebase_admin._apps:
@@ -69,17 +67,15 @@ class SuccessResponse(BaseModel):
     success: bool
     created: Optional[str] = None
     deleted: Optional[str] = None
-# Dependency to verify Firebase ID token and check admin
-async def get_current_admin_user(request: Request):
+
+# Dependency to verify Firebase ID token (admin check now handled by Firestore rules)
+async def get_current_firebase_user(request: Request):
     auth_header = request.headers.get("authorization")
     if not auth_header or not auth_header.lower().startswith("bearer "):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing or invalid Authorization header")
     id_token = auth_header.split(" ", 1)[1]
     try:
         decoded_token = firebase_auth.verify_id_token(id_token)
-        user_email = decoded_token.get("email")
-        if not user_email or user_email not in ALLOWED_ADMIN_EMAILS:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not authorized")
         return decoded_token
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {e}")
@@ -130,7 +126,7 @@ def get_rule(rule_name: str):
 
 
 @app.post("/rules/{rule_name}/edit", response_model=SuccessResponse)
-async def edit_rule(rule_name: str, req: RuleEditRequest = Body(...), user=Depends(get_current_admin_user)):
+async def edit_rule(rule_name: str, req: RuleEditRequest = Body(...), user=Depends(get_current_firebase_user)):
     """
     Edit an existing rule's markdown in Firestore. No passphrase required.
     """
@@ -146,7 +142,7 @@ async def edit_rule(rule_name: str, req: RuleEditRequest = Body(...), user=Depen
 
 # Create a new rule
 @app.post("/rules", response_model=SuccessResponse)
-async def create_rule(req: RuleCreateRequest = Body(...), user=Depends(get_current_admin_user)):
+async def create_rule(req: RuleCreateRequest = Body(...), user=Depends(get_current_firebase_user)):
     """
     Create a new rule with placeholder markdown. No passphrase required.
     """
@@ -158,7 +154,7 @@ async def create_rule(req: RuleCreateRequest = Body(...), user=Depends(get_curre
 
 # Delete a rule
 @app.delete("/rules/{rule_name}", response_model=SuccessResponse)
-async def delete_rule(rule_name: str, user=Depends(get_current_admin_user)):
+async def delete_rule(rule_name: str, user=Depends(get_current_firebase_user)):
     """
     Delete a rule by name. No passphrase required.
     """

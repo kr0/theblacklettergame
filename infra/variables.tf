@@ -11,10 +11,10 @@ variable "cloud_run_image" {
   default     = "gcr.io/blackletter-dev/blackletter-backend"
 }
 
-variable "blackletter_admin_emails" {
-  description = "Comma-separated list of admin emails allowed to edit rules."
-  type        = string
-  default     = "kelvin.jro@gmail.com"
+variable "firestore_admin_emails" {
+  description = "List of emails allowed to write to Firestore rules collection."
+  type        = list(string)
+  default     = ["kelvin.jro@gmail.com"]
 }
 variable "support_email" {
   description = "Support email for OAuth consent screen."

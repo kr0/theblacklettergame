@@ -10,10 +10,6 @@ resource "google_cloud_run_service" "backend" {
         ports {
           container_port = 8080
         }
-        env {
-          name  = "BLACKLETTER_ADMIN_EMAILS"
-          value = var.blackletter_admin_emails
-        }
       }
     }
   }
