@@ -1,0 +1,11 @@
+<!-- blackletter-favicon.svg: A black gothic capital letter B as favicon -->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <style>
+    @font-face {
+      font-family: 'Canterbury';
+      src: url('fonts/CanterburyRegular.ttf') format('truetype');
+    }
+  </style>
+  <rect width="64" height="64" fill="white"/>
+  <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-family="Canterbury, serif" font-size="56" fill="black">B</text>
+</svg>

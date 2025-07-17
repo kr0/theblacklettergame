@@ -1,0 +1,12 @@
+@font-face {
+  font-family: 'Canterbury';
+  src: url('CanterburyRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.favicon-b {
+  font-family: 'Canterbury', serif;
+  font-size: 48px;
+  fill: black;
+}
