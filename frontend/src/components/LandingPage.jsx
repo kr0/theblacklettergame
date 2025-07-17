@@ -8,7 +8,7 @@ function LandingPage() {
     <div style={{ fontFamily: 'serif', padding: '2rem', background: '#f8f9fa' }}>
       {/* Hero Section */}
       <section style={{ textAlign: 'center', marginBottom: '3rem' }}>
-        <h1 style={{ fontSize: '3rem', margin: '0.5em 0', color: '#222', fontFamily: 'Blackletter, serif', letterSpacing: '2px' }}>
+        <h1 className="canterbury" style={{ fontSize: '3rem', margin: '0.5em 0', color: '#222', letterSpacing: '2px' }}>
           Blackletter
         </h1>
         <p style={{ fontSize: '1.3rem', color: '#333', fontWeight: 'bold', margin: '0.5em 0' }}>
