@@ -1,9 +1,11 @@
+output "cloud_run_backend_service_account_email" {
+  description = "Email of the Cloud Run backend service account."
+  value       = google_service_account.cloud_run_backend.email
+}
 output "gamemaster_passphrase_secret_id" {
   description = "Secret Manager secret id for GAMEMASTER_PASSPHRASE used by backend."
   value       = google_secret_manager_secret.gamemaster_passphrase.secret_id
 }
-// outputs.tf - Terraform outputs
-// ...placeholder for output definitions...
 output "cloudrun_url" {
   description = "URL of the deployed Cloud Run backend service"
   value       = google_cloud_run_service.backend.status[0].url

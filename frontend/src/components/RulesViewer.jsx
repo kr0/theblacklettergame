@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+// Firebase imports
+import { useAuth } from "../auth/AuthProvider";
+import GamemasterButton from "./GamemasterButton";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { BACKEND_URL } from "../constants";
@@ -13,13 +16,12 @@ const RulesViewer = () => {
   const [selectedRule, setSelectedRule] = useState(null);
   const [ruleContent, setRuleContent] = useState("");
   const [showRaw, setShowRaw] = useState(false);
-  const [gamemasterMode, setGamemasterMode] = useState(false);
-  const [gmPasswordInput, setGmPasswordInput] = useState("");
-  const [gmPasswordError, setGmPasswordError] = useState("");
+  const { user, gamemasterMode } = useAuth();
+  // Removed password state
   // Remove editing state, editing is now handled by RulesEditor route
   const [newRuleName, setNewRuleName] = useState("");
   // Store the gamemaster session passphrase after successful entry
-  const [gmSessionPassphrase, setGmSessionPassphrase] = useState("");
+  // Removed session passphrase state
   const [deleteMessage, setDeleteMessage] = useState("");
   const [rulesLoading, setRulesLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -48,16 +50,19 @@ const RulesViewer = () => {
       setMessage("Rule name required.");
       return;
     }
-    if (!gmSessionPassphrase) {
+    if (!user) {
       setMessage("Gamemaster session not active.");
       return;
     }
     setMessage("");
-    const payload = { rule_name: newRuleName, passphrase: gmSessionPassphrase };
-    console.log("Creating rule with payload:", payload);
+    const payload = { rule_name: newRuleName };
+    const idToken = await user.getIdToken();
     const res = await fetch(`${BACKEND_URL}/rules`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`
+      },
       body: JSON.stringify(payload),
     });
     if (res.ok) {
@@ -83,15 +88,18 @@ const RulesViewer = () => {
 
   // Delete Rule
   const handleDeleteRule = async (rule) => {
-    if (!gmSessionPassphrase) {
+    if (!user) {
       setDeleteMessage("Gamemaster session not active.");
       return;
     }
     setDeleteMessage("");
+    const idToken = await user.getIdToken();
     const res = await fetch(`${BACKEND_URL}/rules/${rule}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ passphrase: gmSessionPassphrase }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`
+      }
     });
     if (res.ok) {
       setDeleteMessage("");
@@ -128,33 +136,12 @@ const RulesViewer = () => {
 
   // Remove all editing/cancel/save logic; handled by RulesEditor
 
-  // Handler for toggling gamemaster mode with password
-  const handleToggleGamemasterMode = () => {
-    if (!gamemasterMode) {
-      // Prompt for password
-      setGmPasswordInput("");
-      setGmPasswordError("");
-      setShowGmPasswordPrompt(true);
-    } else {
-      setGamemasterMode(false);
-      setGmSessionPassphrase(""); // Clear session passphrase on logout
-    }
-  };
+  // Auth logic is now handled by AuthProvider
 
-  const [showGmPasswordPrompt, setShowGmPasswordPrompt] = useState(false);
-
-  const handleGmPasswordSubmit = () => {
-    if (!gmPasswordInput) {
-      setGmPasswordError("Password required.");
-      return;
-    }
-    // Store the passphrase in session and enable gamemaster mode
-    setGmSessionPassphrase(gmPasswordInput);
-    setGamemasterMode(true);
-    setShowGmPasswordPrompt(false);
-    setGmPasswordInput("");
-    setGmPasswordError("");
-  };
+  // Example usage in JSX:
+  // <button onClick={handleToggleGamemasterMode}>
+  //   {gamemasterMode ? `Exit Gamemaster Mode (${user?.displayName || ""})` : "Enter Gamemaster Mode"}
+  // </button>
 
   // Handler for delete confirmation
   const handleDeleteRuleWithConfirm = (rule) => {
@@ -186,40 +173,15 @@ const RulesViewer = () => {
       )}
       <button style={{ marginBottom: "1rem" }} onClick={() => navigate("/")}>Back to Landing Page</button>
       <div style={{ marginBottom: "1rem" }}>
-        <button
-          onClick={handleToggleGamemasterMode}
-          style={{ background: gamemasterMode ? '#222' : '#eee', color: gamemasterMode ? '#fff' : '#222', border: '1px solid #ccc', borderRadius: 6, padding: '0.5em 1.2em', fontWeight: 'bold' }}
-        >
-          {gamemasterMode ? 'Gamemaster Mode: ON' : 'Gamemaster Mode: OFF'}
-        </button>
+        <GamemasterButton />
       </div>
 
-      {/* Gamemaster password prompt modal */}
-      {showGmPasswordPrompt && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', padding: '2em', borderRadius: 8, boxShadow: '0 2px 8px #888', minWidth: 300 }}>
-            <h3>Enter Gamemaster Password</h3>
-            <input
-              type="password"
-              value={gmPasswordInput}
-              onChange={e => setGmPasswordInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleGmPasswordSubmit(); }}
-              style={{ width: '100%', marginBottom: '1em' }}
-              autoFocus
-            />
-            {gmPasswordError && <div style={{ color: 'red', marginBottom: '1em' }}>{gmPasswordError}</div>}
-            <div style={{ display: 'flex', gap: '1em', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowGmPasswordPrompt(false)}>Cancel</button>
-              <button onClick={handleGmPasswordSubmit}>Enter</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Gamemaster password prompt modal removed for Google Auth */}
 
       <h2>Rules</h2>
 
       {/* Gamemaster-only: Create Rule UI */}
-      {gamemasterMode && (
+      {user && gamemasterMode && (
         <div style={{ marginBottom: "2rem", background: "#f9f9f9", padding: "1em", borderRadius: "8px" }}>
           <h3>Add New Rule</h3>
           <input
@@ -239,7 +201,8 @@ const RulesViewer = () => {
         {rules.map((ruleObj) => (
           <li key={ruleObj.name} style={{ display: "flex", alignItems: "center", gap: "0.5em", marginBottom: "0.4em" }}>
             {/* Gamemaster-only: Delete button for each rule (trashcan icon, left) */}
-            {gamemasterMode && (
+
+            {user && gamemasterMode && (
               <button
                 style={{
                   color: "#fff",
@@ -285,7 +248,7 @@ const RulesViewer = () => {
       </ul>
 
       {/* Gamemaster-only: Delete feedback */}
-      {gamemasterMode && deleteMessage && (
+      {user && gamemasterMode && deleteMessage && (
         <div style={{ margin: "1em 0" }}>
           <span style={{ color: "red" }}>{deleteMessage}</span>
         </div>
@@ -296,7 +259,7 @@ const RulesViewer = () => {
           <h3>{selectedRule}</h3>
           <div style={{ marginBottom: "0.5rem" }}>
             {/* Gamemaster-only: Edit button */}
-          {gamemasterMode && (
+      {user && gamemasterMode && (
             <button
               style={{ marginLeft: "1rem" }}
               onClick={() => navigate(`/rules/${selectedRule}/edit`)}

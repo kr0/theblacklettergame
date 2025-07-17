@@ -12,9 +12,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 
-# For production, use Google Secret Manager to inject GAMEMASTER_PASSPHRASE
-# See https://cloud.google.com/run/docs/configuring/secrets
-# The deploy script should fetch the secret and set the env var in Cloud Run.
 
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8080

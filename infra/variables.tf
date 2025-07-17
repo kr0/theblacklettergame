@@ -1,7 +1,30 @@
-// variables.tf - Terraform variables
-// ...placeholder for variable definitions...
-variable "project_name" {
-  description = "Google Cloud project name"
+
+variable "cloud_run_service_name" {
+  description = "Name of the Cloud Run backend service."
+  type        = string
+  default     = "blackletter-backend"
+}
+
+variable "cloud_run_image" {
+  description = "Container image for the Cloud Run backend service."
+  type        = string
+  default     = "gcr.io/blackletter-dev/blackletter-backend"
+}
+
+variable "blackletter_admin_emails" {
+  description = "Comma-separated list of admin emails allowed to edit rules."
+  type        = string
+  default     = "kelvin.jro@gmail.com"
+}
+variable "support_email" {
+  description = "Support email for OAuth consent screen."
+  type        = string
+  default     = "support@example.com"
+}
+
+# Project ID (used throughout infra)
+variable "project_id" {
+  description = "Google Cloud project ID (e.g. blackletter-dev)"
   type        = string
   default     = "blackletter-dev"
 }
@@ -32,4 +55,5 @@ variable "billing_account" {
 variable "gamemaster_passphrase" {
   description = "Passphrase for gamemaster auth. Used for Google Secret Manager."
   type        = string
+  default = "changeme"
 }

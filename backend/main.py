@@ -6,13 +6,27 @@ import os
 from dotenv import load_dotenv
 from google.cloud import firestore
 from google.api_core.exceptions import NotFound
+import firebase_admin
+from firebase_admin import auth as firebase_auth, credentials
+from fastapi import Request, status, Depends
+from typing import List, Optional
 
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
+
+# List of allowed Google emails for admin actions
+ALLOWED_ADMIN_EMAILS = set(os.environ.get("BLACKLETTER_ADMIN_EMAILS", "").split(","))
+
+# Initialize Firebase Admin SDK (for verifying ID tokens)
+if not firebase_admin._apps:
+    cred_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    if cred_path:
+        cred = credentials.Certificate(cred_path)
+        firebase_admin.initialize_app(cred)
+    else:
+        # Use default credentials (Cloud Run, GKE, GCE, etc.)
+        firebase_admin.initialize_app()
 RULES_COLLECTION = "rules"
-PASSPHRASE = os.environ.get(
-    "GAMEMASTER_PASSPHRASE", "blackletter123"
-)  # Set in env for production
 PLACEHOLDER_MARKDOWN = """# New Rule\n\nThis is a placeholder for your new rule. Edit this markdown to add your content."""
 
 
@@ -31,16 +45,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # Define pydantic models for requests and responses
+
+
 class RuleEditRequest(BaseModel):
     markdown: str
-    passphrase: str
-
 
 class RuleCreateRequest(BaseModel):
     rule_name: str
-    passphrase: str
+
+class RuleSummary(BaseModel):
+    name: str
+    created_at: Optional[str]
+    updated_at: Optional[str]
+
+class ListRulesResponse(BaseModel):
+    rules: List[RuleSummary]
+
+class RuleMarkdownResponse(BaseModel):
+    markdown: str
+
+class SuccessResponse(BaseModel):
+    success: bool
+    created: Optional[str] = None
+    deleted: Optional[str] = None
+# Dependency to verify Firebase ID token and check admin
+async def get_current_admin_user(request: Request):
+    auth_header = request.headers.get("authorization")
+    if not auth_header or not auth_header.lower().startswith("bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing or invalid Authorization header")
+    id_token = auth_header.split(" ", 1)[1]
+    try:
+        decoded_token = firebase_auth.verify_id_token(id_token)
+        user_email = decoded_token.get("email")
+        if not user_email or user_email not in ALLOWED_ADMIN_EMAILS:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not authorized")
+        return decoded_token
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {e}")
 
 
 @app.get("/")
@@ -48,7 +90,7 @@ def read_root():
     return {"message": "Hello, World!"}
 
 
-@app.get("/rules")
+@app.get("/rules", response_model=ListRulesResponse)
 def list_rules():
     """
     List all rules in the Firestore collection, sorted by creation date descending.
@@ -59,15 +101,22 @@ def list_rules():
     rules = []
     for doc in docs:
         data = doc.to_dict()
+        created_at = data.get("created_at")
+        updated_at = data.get("updated_at")
+        # Convert Firestore timestamp to ISO string if present
+        if created_at is not None:
+            created_at = created_at.isoformat()
+        if updated_at is not None:
+            updated_at = updated_at.isoformat()
         rules.append({
             "name": doc.id,
-            "created_at": data.get("created_at"),
-            "updated_at": data.get("updated_at")
+            "created_at": created_at,
+            "updated_at": updated_at
         })
     return {"rules": rules}
 
 
-@app.get("/rules/{rule_name}")
+@app.get("/rules/{rule_name}", response_model=RuleMarkdownResponse)
 def get_rule(rule_name: str):
     """
     Retrieve a rule's markdown from Firestore.
@@ -80,13 +129,11 @@ def get_rule(rule_name: str):
     return {"markdown": data.get("markdown", "")}
 
 
-@app.post("/rules/{rule_name}/edit")
-def edit_rule(rule_name: str, req: RuleEditRequest = Body(...)):
+@app.post("/rules/{rule_name}/edit", response_model=SuccessResponse)
+async def edit_rule(rule_name: str, req: RuleEditRequest = Body(...), user=Depends(get_current_admin_user)):
     """
-    Edit an existing rule's markdown in Firestore. Requires passphrase.
+    Edit an existing rule's markdown in Firestore. No passphrase required.
     """
-    if req.passphrase != PASSPHRASE:
-        raise HTTPException(status_code=403, detail="Invalid passphrase")
     doc_ref = firestore_client.collection(RULES_COLLECTION).document(rule_name)
     if not doc_ref.get().exists:
         raise HTTPException(status_code=404, detail="Rule not found")
@@ -98,13 +145,11 @@ def edit_rule(rule_name: str, req: RuleEditRequest = Body(...)):
 
 
 # Create a new rule
-@app.post("/rules")
-def create_rule(req: RuleCreateRequest = Body(...)):
+@app.post("/rules", response_model=SuccessResponse)
+async def create_rule(req: RuleCreateRequest = Body(...), user=Depends(get_current_admin_user)):
     """
-    Create a new rule with placeholder markdown. Requires passphrase.
+    Create a new rule with placeholder markdown. No passphrase required.
     """
-    if req.passphrase != PASSPHRASE:
-        raise HTTPException(status_code=403, detail="Invalid passphrase")
     doc_ref = firestore_client.collection(RULES_COLLECTION).document(req.rule_name)
     if doc_ref.get().exists:
         raise HTTPException(status_code=400, detail="Rule already exists")
@@ -112,13 +157,11 @@ def create_rule(req: RuleCreateRequest = Body(...)):
     return {"success": True, "created": req.rule_name}
 
 # Delete a rule
-@app.delete("/rules/{rule_name}")
-def delete_rule(rule_name: str, passphrase: str = Body(..., embed=True)):
+@app.delete("/rules/{rule_name}", response_model=SuccessResponse)
+async def delete_rule(rule_name: str, user=Depends(get_current_admin_user)):
     """
-    Delete a rule by name. Requires passphrase.
+    Delete a rule by name. No passphrase required.
     """
-    if passphrase != PASSPHRASE:
-        raise HTTPException(status_code=403, detail="Invalid passphrase")
     doc_ref = firestore_client.collection(RULES_COLLECTION).document(rule_name)
     if not doc_ref.get().exists:
         raise HTTPException(status_code=404, detail="Rule not found")

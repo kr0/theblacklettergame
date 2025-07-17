@@ -2,13 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../constants";
+import { useAuth } from "../auth/AuthProvider";
 
 export default function RulesEditor() {
   const { ruleName } = useParams();
   const navigate = useNavigate();
   const [markdown, setMarkdown] = useState("");
   const [editValue, setEditValue] = useState("");
-  const [passphrase, setPassphrase] = useState("");
+  const { user, gamemasterMode } = useAuth();
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -23,10 +24,18 @@ export default function RulesEditor() {
 
   const handleSave = async () => {
     setMessage("");
+    if (!user || !gamemasterMode) {
+      setMessage("Gamemaster session not active.");
+      return;
+    }
+    const idToken = await user.getIdToken();
     const res = await fetch(`${BACKEND_URL}/rules/${ruleName}/edit`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ markdown: editValue, passphrase }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`
+      },
+      body: JSON.stringify({ markdown: editValue }),
     });
     if (res.ok) {
       setMarkdown(editValue);
@@ -52,13 +61,6 @@ export default function RulesEditor() {
         onChange={e => setEditValue(e.target.value)}
         rows={20}
         style={{ width: "100%" }}
-      />
-      <input
-        type="password"
-        placeholder="Enter gamemaster passphrase"
-        value={passphrase}
-        onChange={e => setPassphrase(e.target.value)}
-        style={{ marginTop: "1em" }}
       />
       <div style={{ marginTop: "1em" }}>
         <button onClick={handleSave}>Save</button>
